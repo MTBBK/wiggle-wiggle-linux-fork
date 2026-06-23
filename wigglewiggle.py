@@ -130,35 +130,40 @@ def find_wigglegrams(thresh: int) -> list[list[HashedImage]]:
     if this_wiggler: wigglers.append(this_wiggler)
     return wigglers
 
-def make_wigglegram(filename: str, imgs: list[HashedImage], frame_duration: int = 150, max_size: int = 600):
+def make_wigglegram(filename: str, imgs: list[HashedImage], frame_duration: int = 150, max_size: int = 1500):
     pillows = []
     for img in imgs:
         # Load and correct orientation
         gottem = Image.open(img.path)
         gottem = ImageOps.exif_transpose(gottem)
 
-        # Resize to optimize size
+        # Increase max_size for better resolution
         gottem.thumbnail((max_size, max_size), Image.Resampling.LANCZOS)
         pillows.append(gottem)
 
-    # Use a boomerang effect
     full_sequence = pillows + pillows[::-1][1:-1]
 
-    # Save with optimization
-    # loop=0: infinite, optimize=True: reduces size
+	# Quantize to a high-quality palette
+    # full_sequence = [p.convert('P', palette=Image.Palette.ADAPTIVE, colors=256) for p in full_sequence]
+
+    # Save with higher quality settings
     full_sequence[0].save(
         filename,
         save_all=True,
         append_images=full_sequence[1:],
         duration=frame_duration,
         loop=0,
-        optimize=True
+        optimize=False,          # Disabling optimization can sometimes help quality
+        method=6,                # 6 is the highest compression/quality effort for GIF
+        subrectangles=True       # Stores only the changes between frames, reducing size
     )
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--directory", "-d", required=True)
     parser.add_argument("action", choices=["hash", "export"])
     parser.add_argument("--threshold", "-t", help="How similar an image must be to be considered a wigglegram.", type=int, default=10)
+    parser.add_argument("--max-size", "-s", type=int, default=800, help="Max width/height of the GIF.")
     args = parser.parse_args()
 
     if args.action == "hash":
@@ -168,5 +173,6 @@ if __name__ == "__main__":
         all_found = find_wigglegrams(args.threshold)
         for i, wig in enumerate(all_found):
             fname = os.path.join(args.directory, f"wiggle_{i}.gif")
-            make_wigglegram(fname, wig)
+            make_wigglegram(fname, wig, max_size=args.max_size)
             print(f"Exported: {fname}")
+
