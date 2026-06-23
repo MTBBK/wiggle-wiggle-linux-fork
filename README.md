@@ -1,3 +1,7 @@
+# Original Project
+`https://github.com/JCLemme/wiggle-wiggle`
+Modified for support systems other than MacOS and fixed really large sized gif file problem.
+
 # wiggle-wiggle
 find and extract wiggle stereographs from your photos
 
