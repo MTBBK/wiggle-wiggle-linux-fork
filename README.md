@@ -26,5 +26,6 @@ Then you can run `export` to see the wigglegrams.
 
 ```
 ./wigglewiggle.py -d home/photos hash      # hash your photos
-./wigglewiggle.py -d home/photos export    # build the gifs
+./wigglewiggle.py -d home/photos export    # build gifs
+./wigglewiggle.py -d home/photos export -s 1200 # build gifs with width 1200
 ```
